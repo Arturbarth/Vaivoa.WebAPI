@@ -74,12 +74,12 @@ namespace Vaivoa.WebAPI.Api
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             //configura para gerar SwaggerDOC para documentação da API
-            if (env.IsDevelopment())
-            {
+            //if (env.IsDevelopment())
+            //{
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "VaiVoaWebApi v1"));
-            }
+            //}
 
             app.UseHttpsRedirection();
        
