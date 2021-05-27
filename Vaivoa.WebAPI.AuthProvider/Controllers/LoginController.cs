@@ -8,7 +8,6 @@ using Vaivoa.CartoesController.Seguranca;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.Web.Providers.Entities;
 
 namespace Vaivoa.CartoesController.Services
 {
@@ -24,6 +23,7 @@ namespace Vaivoa.CartoesController.Services
         }
 
         [HttpPost]
+        [ProducesResponseType(statusCode: 200, Type = typeof(string))]
         public async Task<IActionResult> Token(LoginModel model)
         {
             if (ModelState.IsValid)
@@ -47,7 +47,7 @@ namespace Vaivoa.CartoesController.Services
                     var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
                     return Ok(tokenString);
                 }
-                return Unauthorized();
+                return Unauthorized("Usuário ou senha inválidos!");
             }
             return BadRequest();
         }

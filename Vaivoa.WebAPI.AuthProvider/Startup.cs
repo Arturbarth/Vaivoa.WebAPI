@@ -42,14 +42,23 @@ namespace Vaivoa.WebAPI.AuthProvider
             }).AddEntityFrameworkStores<AuthDbContext>();
 
             services.AddControllers();
+
+            //gera o SwaggerDOC para documentação da API
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "VaiVoaWebApiAuth", Version = "v1" });
+            });
         }
-        
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();         
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "VaiVoaWebApiAuth v1"));
 
             app.UseHttpsRedirection();
 

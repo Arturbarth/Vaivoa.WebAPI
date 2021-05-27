@@ -34,7 +34,8 @@ namespace Vaivoa.WebAPI.Api
             //acredito que isso se deve pois estou subindo 2 serviços, 1 de tokens e outro que é a API propriamente dita
             services.AddCors();
 
-            services.AddDbContext<CartaoContext>(options => {
+            services.AddDbContext<CartaoContext>(options =>
+            {
                 options.UseSqlServer(Configuration.GetConnectionString("Vaivoa"));
             });
 
@@ -65,24 +66,58 @@ namespace Vaivoa.WebAPI.Api
             });
 
             //gera o SwaggerDOC para documentação da API
-            services.AddSwaggerGen(c =>
+            /*services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "VaiVoaWebApi", Version = "v1" });
+            });*/
+
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "My API",
+                    Version = "v1"
+                });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    Description = "Autorização JWT utilizando Schema Bearer. \r\n\r\n Acesse a API de autenticação atravéz deste link: e informe o Bearer abaixo.\r\n\r\n Exemplo: \"Bearer 12345abcdef\"",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                   {
+                     new OpenApiSecurityScheme
+                     {
+                       Reference = new OpenApiReference
+                       {
+                         Type = ReferenceType.SecurityScheme,
+                         Id = "Bearer"
+                       }
+                      },
+                      new string[] { }
+                    }
+                  });
             });
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             //configura para gerar SwaggerDOC para documentação da API
-            //if (env.IsDevelopment())
-            //{
+            if (env.IsDevelopment())
+            {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "VaiVoaWebApi v1"));
-            //}
+            }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "VaiVoaWebApi v1"));
 
             app.UseHttpsRedirection();
-       
+
             app.UseRouting();
 
             //por algum motivo que não sei explicar o JWT só funcionou com CORS,
