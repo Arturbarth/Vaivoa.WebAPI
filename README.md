@@ -448,4 +448,5 @@ namespace Vaivoa.WebAPI.Api
 }
 ```
 
+Arquvo readme segue em atualização. terminarei dia 28
 
