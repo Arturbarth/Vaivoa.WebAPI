@@ -21,7 +21,7 @@ A API de cartões pode ser utilizada a partir do seguinte endereço:
 
 Video tutorial:
 
-[![Tutorial](https://img.youtube.com/vi/3tBSwJqyQNw/0.jpg)](https://youtu.be/w5w59LidkdM "Tutorial")
+[![Tutorial](https://img.youtube.com/vi/3tBSwJqyQNw/0.jpg)](https://www.youtube.com/watch?v=3tBSwJqyQNw "Tutorial")
 
 
 
