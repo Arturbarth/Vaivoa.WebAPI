@@ -4,11 +4,17 @@ A estrutura idela de banco de dados é Pessoa (Email) » Cartões da Pessoa. Mas
 Neste caso, manteremos apenas uma entidade, a entidade Cartões com as seguintes propriedades:
 
 public int Id;
+
 public string Email;
+
 public string Titular; (Em um cenário onde vamos ter Pessoa » Cartões haverá uma propriedade public Pessoa Titular; ) 
+
 public string Numero;
+
 public string CodSeguranca;
+
 public string MesValido;
+
 public string AnoValido;
 
 Como o escopo solicitado é gerar apenas o número do cartão, sem levar em consideração demais pontos que possam estar envolvidos como limite, 
