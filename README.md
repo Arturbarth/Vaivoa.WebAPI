@@ -295,6 +295,7 @@ O código abaixo já está com o MiddleWare JWT, para instalar é fácil:
 
 ```C#
 dotnet add package Swashbuckle.AspNetCore
+```
 
 
 ```C#
