@@ -19,6 +19,13 @@ A API de cartões pode ser utilizada a partir do seguinte endereço:
 
 ### Bearer Auth Token, deve ser gerado na API http://45.160.148.172:40001/swagger/index.html
 
+Video tutorial:
+
+[![Tutorial](https://img.youtube.com/vi/3tBSwJqyQNw/0.jpg)](https://youtu.be/w5w59LidkdM "Tutorial")
+
+
+
+
 
 # DESENVOLVIMENTO
 
