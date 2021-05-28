@@ -1,3 +1,7 @@
+# CONSUMO DAS APIS
+
+Ambas as APIS estão online e acessíveis de qualquer lugar do planeta em um servidor executando Docker. Ambas ficarão online por tempo limitado. 
+
 # VAIVOA AUTH API
 
 A API de autenticação pode ser utilizada a partir do seguinte endereço:
