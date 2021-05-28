@@ -1,3 +1,23 @@
+# VAIVOA AUTH API
+
+A API de autenticação pode ser utilizada a partir do seguinte endereço:
+
+### http://45.160.148.172:40001/swagger/index.html
+
+### Usuário: admin
+### Senha: 123
+
+## VAIVOA CARTÃO API
+
+A API de cartões pode ser utilizada a partir do seguinte endereço:
+
+### http://45.160.148.172:50001/swagger/index.html
+
+### Bearer Auth Token, deve ser gerado na API http://45.160.148.172:40001/swagger/index.html
+
+
+# DESENVOLVIMENTO
+
 Primeiro, vamos pensar no problema:
 Precisamos que a API receba um email e gere um cartão, neste caso, não vamos complicar e vamos manter o escopo bem definido.
 A estrutura idela de banco de dados é Pessoa (Email) » Cartões da Pessoa. Mas se abrangermos uma estrutura de Microsservisos, teriamos uma API especifica para pessoas, correto?
