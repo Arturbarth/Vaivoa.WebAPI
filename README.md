@@ -23,6 +23,11 @@ Video tutorial:
 
 [![Tutorial](https://img.youtube.com/vi/3tBSwJqyQNw/0.jpg)](https://www.youtube.com/watch?v=3tBSwJqyQNw "Tutorial")
 
+# IMAGENS DOCKER
+
+<img width="1686" alt="docker images" src="https://user-images.githubusercontent.com/3423282/120054585-27cd4480-c007-11eb-8644-0ad4b45e1ad4.png">
+
+
 
 
 
