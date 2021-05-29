@@ -660,3 +660,9 @@ Agora que estamos gerando um token e retornando para o usuário, vamos apenas co
 
 
 <img width="1157" alt="222" src="https://user-images.githubusercontent.com/3423282/120054498-aaa1cf80-c006-11eb-9477-f1cb11ee0756.png">
+
+
+# DOCKER IMAGES
+
+<img width="1686" alt="docker images" src="https://user-images.githubusercontent.com/3423282/120054585-27cd4480-c007-11eb-8644-0ad4b45e1ad4.png">
+
