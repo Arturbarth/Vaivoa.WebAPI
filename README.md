@@ -59,6 +59,9 @@ Pensando em microsserviços, criaremos as classlibs independentes e com objetivo
 Ainda pensando em reutilizar código, porque não criar uma única API de autenticação? Dessa forma, podemos centralizar a autenticação de várias APIs em um único serviço, onde teremos o trabalho de escrever o código uma única vez.
 Com isso em mente, criaremos uma DAL adicional de usuários e um projeto "Segurança" responsável por centralizar as credenciais.
 
+![monolithic_vs_microservice](https://user-images.githubusercontent.com/3423282/120053989-b50e9a00-c003-11eb-9891-c7b2c89a16cd.png)
+
+
 Obs: Não vou detalhar a utilização e instalação dos pacotes NuGet exceto o os pacotes JWT e CreditCardValidator.
 
 Com o seguinte comando criamos a Solution:
@@ -133,6 +136,8 @@ Criada a entidade, vamos prepara-lá para funcionar com EF Core adicionando algu
 É chegada a hora de criarmos a DAL. 
 Primeiro, criamos a entidade CartaoContext e de quebra já vamos utilizar uma boa prática e um Design Pattern muito conhecido chamado RepositoryPattern 
 Você pode ler sobre esse Pattern neste artigo: https://medium.com/@martinstm/repository-pattern-net-core-78d0646b6045
+
+![1_hX8i80hAoxPoY3wGAOzMYw](https://user-images.githubusercontent.com/3423282/120054012-d8d1e000-c003-11eb-849e-011e11290883.png)
 
 ```C#
 using Vaivoa.CartoesController.Modelos;
@@ -479,5 +484,179 @@ namespace Vaivoa.WebAPI.Api
 }
 ```
 
-Arquvo readme segue em atualização. terminarei dia 28
+# AUTH API
 
+Finalmente, vamos codificar a API de autenticação. 
+A API de autenticação é executada em um banco de dados separado do banco de dados de cartões, seguindo os principios do correto desenvolvimento utilizando Microsserviços, onde cada serviço deve possuir sua base de dados. É possível sim desenvolver utilizando a mesma base para tudo mas optei por deixar separado.
+
+Preferi pelo formato de autenticação JWT, o qual já estou mais familiarizado e tem uma implementação super simples.
+
+Para isso, utilizaremos uma biblioteca NuGet pronta. 
+
+```C#
+dotnet add package System.IdentityModel.Tokens.Jwt
+```
+
+Precisamos definir nossa "SecretKey", essa será utilizada no algoritmo de criptografia HmacSha256.
+
+```C#
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+namespace Vaivoa.CartoesController.Seguranca
+{
+    public class SigningConfigurations
+    {
+        private readonly string secret = "mysupersecret_secretkey!123";
+        public SecurityKey Key { get; }
+        public SigningCredentials SigningCredentials { get; }
+
+        public SigningConfigurations()
+        {
+            var keyByteArray = Encoding.ASCII.GetBytes(secret);
+            Key = new SymmetricSecurityKey(keyByteArray);
+            SigningCredentials = new SigningCredentials(
+                Key,
+                SecurityAlgorithms.HmacSha256
+            );
+        }
+    }
+}
+```
+
+Precisamos ainda definir uma classe de configuração de Token, onde poderemos definir quantos minutos, horas, dias ou até mesmo semanas um determinado token é válido.
+
+```C#
+namespace Vaivoa.CartoesController.Seguranca
+{
+    public class TokenConfigurations
+    {
+        public string Audience { get; set; }
+        public string Issuer { get; set; }
+        public int Seconds { get; set; }
+    }
+}
+```
+
+Agora que as classes necessárias para implementar a geração do token estão implementadas, podemos codificar o Controller.
+Note que é nessa estapa que validamos se o usuário e senha informados são válidos atravéz do SignInManager, que é um recurso do próprio .net core para controle de autenticação de usuários em aplicações ASP.NET, ou seja, não precisamos reescrever a roda, só utilizar o que já existe.
+
+Atenção para este ponto:
+
+```C#
+Expires = DateTime.UtcNow.AddMinutes(30),
+```
+Nele definimos por quanto tempo um determinado token é válido. Coloquei apenas 30 minutos.
+
+```C#
+
+    [ApiController]
+    [Route("api/[controller]")]
+    public class LoginController : ControllerBase
+    {
+        private readonly SignInManager<Usuario> _signInManager;
+
+        public LoginController(SignInManager<Usuario> signInManager)
+        {
+            _signInManager = signInManager;
+        }
+
+        [HttpPost]
+        [ProducesResponseType(statusCode: 200, Type = typeof(string))]
+        public async Task<IActionResult> Token(LoginModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager.PasswordSignInAsync(model.Login, model.Password, true, true);
+                if (result.Succeeded)
+                {
+
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var key = System.Text.Encoding.UTF8.GetBytes("vaivoa-webapi-authentication-valid");
+                    var tokenDescriptor = new SecurityTokenDescriptor
+                    {
+                        Subject = new ClaimsIdentity(new Claim[]
+                        {
+                            new Claim(ClaimTypes.Name, model.Login.ToString())
+                        }),
+                        Expires = DateTime.UtcNow.AddMinutes(30),
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    };
+                    var token = tokenHandler.CreateToken(tokenDescriptor);
+                    var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+                    return Ok(tokenString);
+                }
+                return Unauthorized("Usuário ou senha inválidos!");
+            }
+            return BadRequest();
+        }
+    }
+
+```
+
+Agora que estamos gerando um token e retornando para o usuário, vamos apenas configurar o Identity e o Swagger no fonte StartUp.cs e estará tudo pronto.
+
+```C#
+ public class Startup
+    {
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration config)
+        {
+            Configuration = config;
+        }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddDbContext<AuthDbContext>(options => {
+                options.UseSqlServer(Configuration.GetConnectionString("AuthDB"));
+            });
+
+            services.AddIdentity<Usuario, IdentityRole>(options =>
+            {
+                options.Password.RequiredLength = 3;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+            }).AddEntityFrameworkStores<AuthDbContext>();
+
+            services.AddControllers();
+
+            //gera o SwaggerDOC para documentação da API
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "VaiVoaWebApiAuth", Version = "v1" });
+            });
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();         
+            }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "VaiVoaWebApiAuth v1"));
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+        }
+
+```
+
+<img width="1098" alt="111" src="https://user-images.githubusercontent.com/3423282/120054492-9fe73a80-c006-11eb-909c-bd0ed9fe0054.png">
+
+
+<img width="1157" alt="222" src="https://user-images.githubusercontent.com/3423282/120054498-aaa1cf80-c006-11eb-9477-f1cb11ee0756.png">
